@@ -15,13 +15,22 @@ for (const width of widths) {
       const response = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 15000 });
       if (!response || response.status() >= 400) throw new Error(`HTTP ${response?.status()}`);
       await page.waitForSelector('h1', { state: 'visible', timeout: 5000 });
-      const overflow = await page.evaluate(() => ({
-        doc: document.documentElement.scrollWidth,
-        body: document.body.scrollWidth,
-        viewport: window.innerWidth,
-      }));
+      const overflow = await page.evaluate(() => {
+        const viewport = window.innerWidth;
+        const offenders = [...document.querySelectorAll('body *')].map(el => {
+          const r = el.getBoundingClientRect();
+          const style = getComputedStyle(el);
+          return {
+            el: `${el.tagName.toLowerCase()}${el.id ? '#'+el.id : ''}${el.classList.length ? '.'+[...el.classList].slice(0,3).join('.') : ''}`,
+            left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width),
+            display: style.display, position: style.position,
+            text: (el.textContent || '').trim().replace(/\s+/g,' ').slice(0,70),
+          };
+        }).filter(x => x.display !== 'none' && (x.right > viewport + 2 || x.left < -2)).slice(0,8);
+        return {doc: document.documentElement.scrollWidth, body: document.body.scrollWidth, viewport, offenders};
+      });
       if (Math.max(overflow.doc, overflow.body) > overflow.viewport + 2) {
-        throw new Error(`horizontal overflow ${Math.max(overflow.doc, overflow.body)}px > ${overflow.viewport}px`);
+        throw new Error(`horizontal overflow ${Math.max(overflow.doc, overflow.body)}px > ${overflow.viewport}px; offenders=${JSON.stringify(overflow.offenders)}`);
       }
       if (pageErrors.length) throw new Error(`page errors: ${pageErrors.join(' | ')}`);
 
