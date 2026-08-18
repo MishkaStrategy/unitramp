@@ -107,7 +107,8 @@ jobs:
         run: |
           npm install --no-save playwright@1.55.0 lighthouse@12.8.2
           npx playwright install --with-deps chromium
-          echo "CHROME_PATH=$(node -e \"const {chromium}=require('playwright'); process.stdout.write(chromium.executablePath())\")" >> "$GITHUB_ENV"
+          CHROME_PATH=$(node -p "require('playwright').chromium.executablePath()")
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
       - name: Start local site
         run: |
           python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/unitramp-http.log 2>&1 &
