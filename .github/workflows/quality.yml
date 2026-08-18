@@ -97,16 +97,17 @@ jobs:
 
   browser-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install Playwright Chromium
+      - name: Install browser QA tools
         run: |
-          npm install --no-save playwright@1.55.0
+          npm install --no-save playwright@1.55.0 lighthouse@12.8.2
           npx playwright install --with-deps chromium
+          echo "CHROME_PATH=$(node -e \"const {chromium}=require('playwright'); process.stdout.write(chromium.executablePath())\")" >> "$GITHUB_ENV"
       - name: Start local site
         run: |
           python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/unitramp-http.log 2>&1 &
@@ -115,3 +116,19 @@ jobs:
           exit 1
       - name: Responsive and runtime smoke
         run: node scripts/browser_smoke.mjs
+      - name: Lighthouse performance, accessibility and SEO audit
+        run: |
+          npx lighthouse http://127.0.0.1:8080/ \
+            --output=json --output-path=/tmp/lighthouse.json --quiet \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('/tmp/lighthouse.json'))
+          scores={k: round(v['score']*100) for k,v in data['categories'].items()}
+          print('Lighthouse scores:', scores)
+          assert scores['performance'] >= 50, scores
+          assert scores['accessibility'] >= 80, scores
+          assert scores['best-practices'] >= 75, scores
+          assert scores['seo'] >= 80, scores
+          PY
