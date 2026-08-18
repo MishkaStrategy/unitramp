@@ -18,6 +18,7 @@ jobs:
         run: |
           node --check app.js
           node --check nav-patch.js
+          node --check form-consent.js
           node --check franchises.js
           node --check reviews.js
           node --check generated-catalog.js
@@ -27,7 +28,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           required = [
-              'index.html','styles.css','app.js','nav-patch.js','robots.txt','sitemap.xml','404.html',
+              'index.html','styles.css','app.js','nav-patch.js','form-consent.js','robots.txt','sitemap.xml','404.html',
               'generated-catalog.js','catalog-runtime.js','catalog-generated.css',
               'scripts/crawl_unitramp.py','scripts/generate_category_pages.py',
               'katalog/index.html','projects/index.html','info/index.html','contacts/index.html','services/index.html',
@@ -41,6 +42,10 @@ jobs:
           app = Path('app.js').read_text(encoding='utf-8')
           for needle in ['8 800 700-78-09','info@unitramp.ru','79607901070','670','2500']:
               assert needle in app, f'Missing required verified content: {needle}'
+          consent = Path('form-consent.js').read_text(encoding='utf-8')
+          assert 'required' in consent and 'privacy-policy' in consent, 'Contact form must require privacy consent'
+          contacts = Path('contacts/index.html').read_text(encoding='utf-8')
+          assert 'form-consent.js' in contacts, 'Contacts route must load privacy consent control'
           for html in Path('.').glob('**/index.html'):
               text = html.read_text(encoding='utf-8')
               assert '<meta name="description"' in text, f'Missing description in {html}'
