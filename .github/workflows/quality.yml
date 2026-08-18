@@ -15,14 +15,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: JavaScript syntax
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check nav-patch.js
+          node --check form-consent.js
+          node --check franchises.js
+          node --check reviews.js
+          node --check generated-catalog.js
+          node --check catalog-runtime.js
       - name: Required routes and SEO files
         run: |
           python3 - <<'PY'
           from pathlib import Path
           required = [
-              'index.html','styles.css','app.js','robots.txt','sitemap.xml','404.html',
+              'index.html','styles.css','app.js','nav-patch.js','form-consent.js','robots.txt','sitemap.xml','404.html',
+              'generated-catalog.js','catalog-runtime.js','catalog-generated.css',
+              'scripts/crawl_unitramp.py','scripts/generate_category_pages.py',
               'katalog/index.html','projects/index.html','info/index.html','contacts/index.html','services/index.html',
+              'franchises/index.html','reviews/index.html','franchises.js','reviews.js',
               'batutnyj-centr-pod-klyuch/index.html','nindzya-park-pod-klyuch/index.html',
               'aktiviti-park-pod-klyuch/index.html','ulichnye-batutnye-areny/index.html',
               'touch-arena-pod-klyuch/index.html','skalodromy-pod-klyuch/index.html'
@@ -32,14 +42,41 @@ jobs:
           app = Path('app.js').read_text(encoding='utf-8')
           for needle in ['8 800 700-78-09','info@unitramp.ru','79607901070','670','2500']:
               assert needle in app, f'Missing required verified content: {needle}'
+          consent = Path('form-consent.js').read_text(encoding='utf-8')
+          assert 'required' in consent and 'privacy-policy' in consent, 'Contact form must require privacy consent'
+          contacts = Path('contacts/index.html').read_text(encoding='utf-8')
+          assert 'form-consent.js' in contacts, 'Contacts route must load privacy consent control'
           for html in Path('.').glob('**/index.html'):
               text = html.read_text(encoding='utf-8')
               assert '<meta name="description"' in text, f'Missing description in {html}'
               assert '<meta name="viewport"' in text, f'Missing viewport in {html}'
           sitemap = Path('sitemap.xml').read_text(encoding='utf-8')
-          assert '<urlset' in sitemap and 'https://unitramp.ru/katalog/' in sitemap
+          for url in ['https://unitramp.ru/katalog/','https://unitramp.ru/services/','https://unitramp.ru/franchises/','https://unitramp.ru/reviews/']:
+              assert url in sitemap, f'Missing sitemap URL: {url}'
           print('Quality checks passed')
           PY
       - name: No placeholder content
         run: |
           ! grep -RniE 'lorem ipsum|Product 01|Project Example' --include='*.html' --include='*.js' .
+
+  catalog-crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --disable-pip-version-check requests beautifulsoup4
+      - name: Crawl current UnitRamp catalogue
+        run: python scripts/crawl_unitramp.py --output generated-catalog.js --report data/catalog-report.json --min-count 650
+      - name: Generate preserved category routes
+        run: |
+          python scripts/generate_category_pages.py
+          test -f katalog/igrovye-kompleksy/index.html
+          test -f katalog/detskie-igrovye-labirinty/verevochnye-labirinty/index.html
+          test -f katalog/batutnoe-oborudovanie/slamball/index.html
+      - name: Validate generated catalogue JS
+        run: |
+          node --check generated-catalog.js
+          cat data/catalog-report.json
