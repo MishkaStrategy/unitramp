@@ -23,6 +23,7 @@ jobs:
           node --check reviews.js
           node --check generated-catalog.js
           node --check catalog-runtime.js
+          node --check scripts/browser_smoke.mjs
       - name: Required routes and SEO files
         run: |
           python3 - <<'PY'
@@ -31,6 +32,7 @@ jobs:
               'index.html','styles.css','app.js','nav-patch.js','form-consent.js','robots.txt','sitemap.xml','404.html',
               'generated-catalog.js','catalog-runtime.js','catalog-generated.css',
               'scripts/crawl_unitramp.py','scripts/generate_category_pages.py','scripts/generate_sitemap.py',
+              'scripts/audit_internal_links.py','scripts/browser_smoke.mjs',
               'katalog/index.html','projects/index.html','info/index.html','contacts/index.html','services/index.html',
               'franchises/index.html','reviews/index.html','franchises.js','reviews.js',
               'batutnyj-centr-pod-klyuch/index.html','nindzya-park-pod-klyuch/index.html',
@@ -86,7 +88,30 @@ jobs:
           assert 'https://unitramp.ru/katalog/detskie-igrovye-labirinty/' in xml
           print(f'Generated sitemap covers {count} canonical URLs')
           PY
+      - name: Audit generated internal references
+        run: python scripts/audit_internal_links.py
       - name: Validate generated catalogue JS
         run: |
           node --check generated-catalog.js
           cat data/catalog-report.json
+
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/unitramp-http.log 2>&1 &
+          for i in {1..20}; do curl -fsS http://127.0.0.1:8080/ >/dev/null && exit 0; sleep 0.5; done
+          cat /tmp/unitramp-http.log
+          exit 1
+      - name: Responsive and runtime smoke
+        run: node scripts/browser_smoke.mjs
