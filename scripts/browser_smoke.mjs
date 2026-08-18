@@ -25,19 +25,17 @@ for (const width of widths) {
       }
       if (pageErrors.length) throw new Error(`page errors: ${pageErrors.join(' | ')}`);
 
-      if (width <= 768) {
-        const menu = page.locator('.menu-btn');
-        if (await menu.count()) {
-          await menu.click();
-          const mobile = page.locator('.mobile-menu.is-open');
-          await mobile.waitFor({ state: 'visible', timeout: 3000 });
-          const box = await mobile.boundingBox();
-          if (box && (box.x < -1 || box.x + box.width > width + 1)) throw new Error('mobile menu outside viewport');
-          await menu.click();
-        }
+      const menu = page.locator('.menu-btn');
+      if (await menu.isVisible().catch(() => false)) {
+        await menu.click();
+        const mobile = page.locator('.mobile-menu.is-open');
+        await mobile.waitFor({ state: 'visible', timeout: 3000 });
+        const box = await mobile.boundingBox();
+        if (box && (box.x < -1 || box.x + box.width > width + 1)) throw new Error('mobile menu outside viewport');
+        await menu.click();
       } else {
         const mega = page.locator('.mega-trigger');
-        if (await mega.count()) {
+        if (await mega.isVisible().catch(() => false)) {
           await mega.click();
           await page.locator('.mega.is-open').waitFor({ state: 'visible', timeout: 3000 });
         }
