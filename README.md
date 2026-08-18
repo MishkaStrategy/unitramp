@@ -1,18 +1,39 @@
-# UnitRamp — web commercial proposal
+# UnitRamp — Full Website Redesign
 
-Premium interactive sales presentation for UnitRamp.
+Production-oriented redesign of the UnitRamp website around the **PLAY ENGINEERING** concept.
 
-## Concept
+## Goal
 
-The page positions UnitRamp as an engineering and manufacturing partner for turnkey entertainment spaces rather than as a catalogue of individual equipment.
+Preserve the scale and business logic of the current UnitRamp site while replacing the former one-page commercial presentation with a multi-page product experience for turnkey parks, catalogue discovery, projects, articles and contacts.
 
-## Source of facts
+## Implemented routes
 
-Commercial claims, project metrics and product/process facts are based on the current official website: https://unitramp.ru/ . Financial return claims are intentionally not presented as guarantees.
+- `/` — corporate/product home
+- `/katalog/` — catalogue with category filters, search and verified product cards
+- `/projects/` — project archive with city/year search
+- `/info/` — article archive
+- `/contacts/` — verified contacts, legal details and project brief
+- `/services/` — consulting, staff training and estimate review
+- `/batutnyj-centr-pod-klyuch/`
+- `/nindzya-park-pod-klyuch/`
+- `/aktiviti-park-pod-klyuch/`
+- `/ulichnye-batutnye-areny/`
+- `/touch-arena-pod-klyuch/`
+- `/skalodromy-pod-klyuch/`
+
+## Content source
+
+Facts, contacts, category counts, product names, project metrics and article titles are taken from the current public UnitRamp website. Unverified facts are not invented.
+
+The source site currently states **670 catalogue products**. The redesign repository contains the recovered category taxonomy plus the verified product records collected during the migration pass. Legacy URLs not yet mirrored use a GitHub-preview fallback to the corresponding live `unitramp.ru` path instead of a dead 404.
 
 ## Stack
 
-Static HTML + CSS + vanilla JavaScript. No build step required. Designed for GitHub Pages.
+Static HTML + CSS + vanilla JavaScript, intentionally dependency-free for reliable GitHub Pages deployment.
+
+## QA
+
+The repository includes a CI quality workflow that checks JavaScript syntax, required routes, SEO files and basic content invariants.
 
 ## Local preview
 
@@ -20,8 +41,6 @@ Static HTML + CSS + vanilla JavaScript. No build step required. Designed for Git
 python3 -m http.server 8080
 ```
 
-Open `http://localhost:8080`.
-
 ## Deployment
 
-The repository includes a GitHub Pages workflow in `.github/workflows/pages.yml`.
+Pushes to `main` are published to `gh-pages` by `.github/workflows/pages.yml`.
