@@ -15,14 +15,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: JavaScript syntax
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check nav-patch.js
+          node --check franchises.js
+          node --check reviews.js
       - name: Required routes and SEO files
         run: |
           python3 - <<'PY'
           from pathlib import Path
           required = [
-              'index.html','styles.css','app.js','robots.txt','sitemap.xml','404.html',
+              'index.html','styles.css','app.js','nav-patch.js','robots.txt','sitemap.xml','404.html',
               'katalog/index.html','projects/index.html','info/index.html','contacts/index.html','services/index.html',
+              'franchises/index.html','reviews/index.html','franchises.js','reviews.js',
               'batutnyj-centr-pod-klyuch/index.html','nindzya-park-pod-klyuch/index.html',
               'aktiviti-park-pod-klyuch/index.html','ulichnye-batutnye-areny/index.html',
               'touch-arena-pod-klyuch/index.html','skalodromy-pod-klyuch/index.html'
@@ -37,7 +42,8 @@ jobs:
               assert '<meta name="description"' in text, f'Missing description in {html}'
               assert '<meta name="viewport"' in text, f'Missing viewport in {html}'
           sitemap = Path('sitemap.xml').read_text(encoding='utf-8')
-          assert '<urlset' in sitemap and 'https://unitramp.ru/katalog/' in sitemap
+          for url in ['https://unitramp.ru/katalog/','https://unitramp.ru/services/','https://unitramp.ru/franchises/','https://unitramp.ru/reviews/']:
+              assert url in sitemap, f'Missing sitemap URL: {url}'
           print('Quality checks passed')
           PY
       - name: No placeholder content

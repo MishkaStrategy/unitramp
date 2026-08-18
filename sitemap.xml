@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://unitramp.ru/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://unitramp.ru/katalog/</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://unitramp.ru/projects/</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://unitramp.ru/info/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://unitramp.ru/contacts/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://unitramp.ru/stati/services/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://unitramp.ru/services/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://unitramp.ru/franchises/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://unitramp.ru/reviews/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://unitramp.ru/batutnyj-centr-pod-klyuch</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://unitramp.ru/nindzya-park-pod-klyuch</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://unitramp.ru/aktiviti-park-pod-klyuch</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
