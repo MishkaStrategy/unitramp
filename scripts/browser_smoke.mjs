@@ -16,21 +16,34 @@ for (const width of widths) {
       if (!response || response.status() >= 400) throw new Error(`HTTP ${response?.status()}`);
       await page.waitForSelector('h1', { state: 'visible', timeout: 5000 });
       const overflow = await page.evaluate(() => {
+        window.scrollTo(999999, 0);
+        const pageScrollX = window.scrollX;
+        window.scrollTo(0, 0);
         const viewport = window.innerWidth;
+        const isContainedByHorizontalScroller = el => {
+          let p = el.parentElement;
+          while (p && p !== document.body) {
+            const style = getComputedStyle(p);
+            if (['auto','scroll','hidden','clip'].includes(style.overflowX)) return true;
+            p = p.parentElement;
+          }
+          return false;
+        };
         const offenders = [...document.querySelectorAll('body *')].map(el => {
           const r = el.getBoundingClientRect();
           const style = getComputedStyle(el);
           return {
+            node: el,
             el: `${el.tagName.toLowerCase()}${el.id ? '#'+el.id : ''}${el.classList.length ? '.'+[...el.classList].slice(0,3).join('.') : ''}`,
             left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width),
-            display: style.display, position: style.position,
+            display: style.display,
             text: (el.textContent || '').trim().replace(/\s+/g,' ').slice(0,70),
           };
-        }).filter(x => x.display !== 'none' && (x.right > viewport + 2 || x.left < -2)).slice(0,8);
-        return {doc: document.documentElement.scrollWidth, body: document.body.scrollWidth, viewport, offenders};
+        }).filter(x => x.display !== 'none' && (x.right > viewport + 2 || x.left < -2) && !isContainedByHorizontalScroller(x.node)).slice(0,8).map(({node,...rest})=>rest);
+        return {pageScrollX, viewport, offenders};
       });
-      if (Math.max(overflow.doc, overflow.body) > overflow.viewport + 2) {
-        throw new Error(`horizontal overflow ${Math.max(overflow.doc, overflow.body)}px > ${overflow.viewport}px; offenders=${JSON.stringify(overflow.offenders)}`);
+      if (overflow.pageScrollX > 2 || overflow.offenders.length) {
+        throw new Error(`page-level horizontal overflow scrollX=${overflow.pageScrollX}px; offenders=${JSON.stringify(overflow.offenders)}`);
       }
       if (pageErrors.length) throw new Error(`page errors: ${pageErrors.join(' | ')}`);
 
