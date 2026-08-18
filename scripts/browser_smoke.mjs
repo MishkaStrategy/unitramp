@@ -39,7 +39,7 @@ for (const width of widths) {
             display: style.display,
             text: (el.textContent || '').trim().replace(/\s+/g,' ').slice(0,70),
           };
-        }).filter(x => x.display !== 'none' && (x.right > viewport + 2 || x.left < -2) && !isContainedByHorizontalScroller(x.node)).slice(0,8).map(({node,...rest})=>rest);
+        }).filter(x => x.display !== 'none' && x.width > 2 && (x.right > viewport + 2 || x.left < -2) && !isContainedByHorizontalScroller(x.node)).slice(0,8).map(({node,...rest})=>rest);
         return {pageScrollX, viewport, offenders};
       });
       if (overflow.pageScrollX > 2 || overflow.offenders.length) {
