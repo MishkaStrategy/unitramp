@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded',()=>{
+  if(!document.querySelector('style[data-unitramp-responsive-fix]')){
+    const style=document.createElement('style');
+    style.dataset.unitrampResponsiveFix='1';
+    style.textContent='@media(max-width:1180px){.mega{display:none!important}}';
+    document.head.appendChild(style);
+  }
+
   const routeFrom=(anchor,segment)=>{
     if(!anchor)return segment;
     return anchor.href.replace(/contacts\/?(?:#.*)?$/,'')+segment.replace(/^\//,'');
