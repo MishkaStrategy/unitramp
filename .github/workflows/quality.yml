@@ -28,7 +28,8 @@ jobs:
           from pathlib import Path
           required = [
               'index.html','styles.css','app.js','nav-patch.js','robots.txt','sitemap.xml','404.html',
-              'generated-catalog.js','catalog-runtime.js','catalog-generated.css','scripts/crawl_unitramp.py',
+              'generated-catalog.js','catalog-runtime.js','catalog-generated.css',
+              'scripts/crawl_unitramp.py','scripts/generate_category_pages.py',
               'katalog/index.html','projects/index.html','info/index.html','contacts/index.html','services/index.html',
               'franchises/index.html','reviews/index.html','franchises.js','reviews.js',
               'batutnyj-centr-pod-klyuch/index.html','nindzya-park-pod-klyuch/index.html',
@@ -63,7 +64,13 @@ jobs:
           python-version: '3.12'
       - run: pip install --disable-pip-version-check requests beautifulsoup4
       - name: Crawl current UnitRamp catalogue
-        run: python scripts/crawl_unitramp.py --output generated-catalog.js --report data/catalog-report.json --min-count 300
+        run: python scripts/crawl_unitramp.py --output generated-catalog.js --report data/catalog-report.json --min-count 650
+      - name: Generate preserved category routes
+        run: |
+          python scripts/generate_category_pages.py
+          test -f katalog/igrovye-kompleksy/index.html
+          test -f katalog/detskie-igrovye-labirinty/verevochnye-labirinty/index.html
+          test -f katalog/batutnoe-oborudovanie/slamball/index.html
       - name: Validate generated catalogue JS
         run: |
           node --check generated-catalog.js
