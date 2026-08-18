@@ -20,12 +20,15 @@ jobs:
           node --check nav-patch.js
           node --check franchises.js
           node --check reviews.js
+          node --check generated-catalog.js
+          node --check catalog-runtime.js
       - name: Required routes and SEO files
         run: |
           python3 - <<'PY'
           from pathlib import Path
           required = [
               'index.html','styles.css','app.js','nav-patch.js','robots.txt','sitemap.xml','404.html',
+              'generated-catalog.js','catalog-runtime.js','catalog-generated.css','scripts/crawl_unitramp.py',
               'katalog/index.html','projects/index.html','info/index.html','contacts/index.html','services/index.html',
               'franchises/index.html','reviews/index.html','franchises.js','reviews.js',
               'batutnyj-centr-pod-klyuch/index.html','nindzya-park-pod-klyuch/index.html',
@@ -49,3 +52,19 @@ jobs:
       - name: No placeholder content
         run: |
           ! grep -RniE 'lorem ipsum|Product 01|Project Example' --include='*.html' --include='*.js' .
+
+  catalog-crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --disable-pip-version-check requests beautifulsoup4
+      - name: Crawl current UnitRamp catalogue
+        run: python scripts/crawl_unitramp.py --output generated-catalog.js --report data/catalog-report.json --min-count 300
+      - name: Validate generated catalogue JS
+        run: |
+          node --check generated-catalog.js
+          cat data/catalog-report.json
