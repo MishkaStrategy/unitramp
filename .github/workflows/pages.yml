@@ -27,7 +27,9 @@ jobs:
       - name: Install crawler dependencies
         run: pip install --disable-pip-version-check requests beautifulsoup4
       - name: Synchronize source catalogue
-        run: python scripts/crawl_unitramp.py --output generated-catalog.js --report data/catalog-report.json --generate-pages --min-count 300
+        run: python scripts/crawl_unitramp.py --output generated-catalog.js --report data/catalog-report.json --generate-pages --min-count 650
+      - name: Preserve source category routes
+        run: python scripts/generate_category_pages.py
       - name: Publish generated snapshot to gh-pages
         run: |
           git config user.name "github-actions[bot]"
